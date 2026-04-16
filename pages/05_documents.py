@@ -2,6 +2,10 @@ import streamlit as st
 
 st.set_page_config(page_title="Documents", page_icon="📄", layout="wide")
 
+if "corpus" not in st.session_state:
+    from modules.state_manager import load_state
+    st.session_state.corpus = load_state()
+
 st.title("📄 Document Browser")
 
 if not st.session_state.corpus.get("processed", False):
@@ -13,7 +17,7 @@ labels = st.session_state.corpus["labels"]
 cluster_labels = st.session_state.corpus["cluster_labels"]
 
 unique_clusters = list(set(labels))
-cluster_options = {cid: cluster_labels.get(cid, f"Cluster {cid}") for cid in unique_clusters}
+cluster_options = {cid: "Misc / Noise" if cid == -1 else cluster_labels.get(cid, f"Cluster {cid}") for cid in unique_clusters}
 
 selected_cid = st.selectbox(
     "Select a Cluster:",

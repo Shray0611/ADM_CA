@@ -6,6 +6,10 @@ from sklearn.decomposition import PCA
 
 st.set_page_config(page_title="Cluster Visualization", page_icon="🗺️", layout="wide")
 
+if "corpus" not in st.session_state:
+    from modules.state_manager import load_state
+    st.session_state.corpus = load_state()
+
 st.title("🗺️ Cluster Visualization")
 
 if not st.session_state.corpus.get("processed", False):

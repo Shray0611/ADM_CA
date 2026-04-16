@@ -3,9 +3,25 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from sklearn.metrics.pairwise import cosine_similarity
+from collections import defaultdict
 from modules.embedding import get_embeddings
 
+def make_unique(names):
+    count = defaultdict(int)
+    result = []
+    for name in names:
+        count[name] += 1
+        if count[name] == 1:
+            result.append(name)
+        else:
+            result.append(f"{name}_{count[name]}")
+    return result
+
 st.set_page_config(page_title="Embeddings Explorer", page_icon="🧠", layout="wide")
+
+if "corpus" not in st.session_state:
+    from modules.state_manager import load_state
+    st.session_state.corpus = load_state()
 
 st.title("🧠 Embeddings Explorer")
 
@@ -17,6 +33,7 @@ documents = st.session_state.corpus["documents"]
 embeddings = st.session_state.corpus["embeddings"]
 
 filenames = [doc['filename'] for doc in documents]
+unique_names = make_unique(filenames)
 
 col1, col2 = st.columns([1, 1])
 
@@ -36,8 +53,8 @@ with col2:
         limit = min(sim_matrix.shape[0], 25)
         
         sim_df = pd.DataFrame(sim_matrix[:limit, :limit], 
-                              index=filenames[:limit], 
-                              columns=filenames[:limit])
+                              index=unique_names[:limit], 
+                              columns=unique_names[:limit])
                               
         fig = px.imshow(sim_df, 
                         zmin=0, zmax=1.0, 

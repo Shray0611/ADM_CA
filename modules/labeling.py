@@ -35,7 +35,9 @@ def extract_cluster_labels(documents: List[Dict], labels: List[int], n_words: in
         return {}
         
     # Min_df=1 because we might have very few clusters
-    vectorizer = TfidfVectorizer(stop_words='english', max_df=0.9, min_df=1)
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+    custom_stop_words = list(ENGLISH_STOP_WORDS) + ["reduce", "document", "text", "page", "file"]
+    vectorizer = TfidfVectorizer(stop_words=custom_stop_words, max_df=0.9, min_df=1)
     try:
         tfidf_matrix = vectorizer.fit_transform(cluster_texts)
     except ValueError:
@@ -56,7 +58,7 @@ def extract_cluster_labels(documents: List[Dict], labels: List[int], n_words: in
         top_words = [feature_names[idx] for idx in top_indices if row[idx] > 0]
         
         if top_words:
-            cluster_labels[cluster_id] = " · ".join(top_words[:3])
+            cluster_labels[cluster_id] = " | ".join(top_words[:3])
         else:
             cluster_labels[cluster_id] = f"Cluster {cluster_id}"
             

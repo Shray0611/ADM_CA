@@ -54,6 +54,8 @@ def get_cluster_summaries(cluster_docs: Dict[int, List[Dict[str, str]]], cluster
                 }
             }
         return {}
+        
+    json_keys = ",\n    ".join([f'"{cid}": {{\n      "title": "...",\n      "summary": "...",\n      "insights": ["...", "...", "..."]\n    }}' for cid in cluster_docs.keys() if cid != -1])
     
     prompt = f"""You are an expert document analyst.
 
@@ -66,16 +68,11 @@ For each cluster:
    - Summary (3–5 sentences)
    - 3 insights
 
-Return STRICT JSON:
+Return STRICT JSON using the exact cluster IDs provided:
 
 {{
   "clusters": {{
-    "0": {{
-      "title": "...",
-      "summary": "...",
-      "insights": ["...", "...", "..."]
-    }},
-    "1": {{...}}
+    {json_keys}
   }}
 }}
 
@@ -108,6 +105,15 @@ Input data:
         parsed_json = json.loads(response_content)
         
         output_clusters = parsed_json.get("clusters", {})
+        
+        normalized_clusters = {}
+        import re
+        for k, v in output_clusters.items():
+            match = re.search(r'-?\d+', str(k))
+            if match:
+                normalized_clusters[match.group()] = v
+                
+        output_clusters = normalized_clusters
         
         if -1 in cluster_docs:
             output_clusters["-1"] = {

@@ -2,6 +2,10 @@ import streamlit as st
 
 st.set_page_config(page_title="Cluster Summaries", page_icon="📋", layout="wide")
 
+if "corpus" not in st.session_state:
+    from modules.state_manager import load_state
+    st.session_state.corpus = load_state()
+
 st.title("📋 Cluster Summaries")
 
 if not st.session_state.corpus.get("processed", False):
@@ -25,7 +29,10 @@ for cid in unique_clusters:
     count = labels.count(cid)
     doc_names = [d["filename"] for i, d in enumerate(documents) if labels[i] == cid]
     
-    label_text = cluster_labels.get(cid, "Unnamed")
+    if cid == -1:
+        label_text = "Misc / Noise"
+    else:
+        label_text = cluster_labels.get(cid, f"Cluster {cid}")
     
     # JSON keys from LLM may be strings
     summary_data = summaries.get(str(cid), summaries.get(cid, {}))
@@ -40,8 +47,8 @@ for cid in unique_clusters:
         # Badges & Metadata
         col1, col2 = st.columns([3, 2])
         with col1:
-            words = label_text.split(" · ")
-            badges_html = "".join([f"<span style='background-color:#4A4A4A; padding:4px 8px; border-radius:4px; margin-right:5px; font-size: 0.9em'>{w}</span>" for w in words])
+            words = label_text.split(" | ")
+            badges_html = "".join([f"<span style='background-color:#4A4A4A; padding:4px 8px; border-radius:4px; margin-right:5px; font-size: 0.9em'>{w.strip()}</span>" for w in words])
             st.markdown(badges_html, unsafe_allow_html=True)
             
         with col2:

@@ -1,5 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
+from modules.state_manager import load_state
 
 # Load env variables globally
 load_dotenv()
@@ -11,14 +12,7 @@ st.set_page_config(
 )
 
 if "corpus" not in st.session_state:
-    st.session_state.corpus = {
-        "documents": [],
-        "embeddings": None,
-        "labels": [],
-        "cluster_labels": {},
-        "summaries": {},
-        "processed": False
-    }
+    st.session_state.corpus = load_state()
 
 st.title("🚀 Fast Document Clustering & Summarization")
 
